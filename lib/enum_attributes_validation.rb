@@ -30,13 +30,18 @@ module EnumAttributesValidation
   class_methods do
     def validate_enum_attributes(*attributes, **opts)
       attributes.each do |attribute|
-        string_attribute = attribute.to_s
+        attribute = attribute.to_s
 
-        define_method (string_attribute+"=").to_sym do |argument|
-          unless argument.nil?
-            string_argument = argument.to_s
-            self[string_attribute]                  = string_argument                    if     self.class.send(string_attribute.pluralize).keys.include?(string_argument)
-            self.enum_invalid_attributes[attribute] = opts.merge(value: string_argument) unless self.class.send(string_attribute.pluralize).keys.include?(string_argument)
+        define_method "#{attribute}=" do |argument|
+          if argument.nil?
+            self[attribute] = nil
+          else
+            argument = argument.to_s
+            if self.class.send(attribute.pluralize).keys.include?(argument)
+              self[attribute] = argument
+            else
+              self.enum_invalid_attributes[attribute] = opts.merge(value: argument)
+            end
           end
         end
       end
